@@ -5,11 +5,9 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.spring.web.client.HttpHeadersCarrier;
-import io.opentracing.contrib.spring.web.client.TracingRestTemplateInterceptor;
 import io.opentracing.propagation.TextMapExtractAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -65,15 +63,20 @@ public class HomeController {
         Span child = tracer.buildSpan("tault-operation")
                 .asChildOf(tracer.activeSpan())
                 .startManual();
+        String message = "Hello from Taulty!";
+        String faultMessage = "with delay";
+        // lift this up into a global interceptor so we don't have to change the application
         try {
             if (parentSpan != null) {
                 for (Map.Entry<String, String> entry : carrier) {
                     if (entry.getKey().equalsIgnoreCase("X-B3-Service") && entry.getValue().equalsIgnoreCase("tault")) {
                         Thread.sleep(2000);
+                        message = message.concat(faultMessage);
+
                     }
                 }
             }
-            return "Hello from Taulty!";
+            return message;
 
         } catch (Exception exception) {
             return "we had an exception";
@@ -89,6 +92,8 @@ public class HomeController {
             String key = (String) headerNames.nextElement();
             String value = request.getHeader(key);
             httpHeaders.put(key, value);
+            System.out.println("Key : " + key);
+            System.out.println("Value : " + value);
         }
         return httpHeaders;
     }
