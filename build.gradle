@@ -1,3 +1,7 @@
+plugins {
+    id 'org.springframework.boot' version '1.5.7.RELEASE'
+}
+
 group 'tault'
 version '1.0-SNAPSHOT'
 
